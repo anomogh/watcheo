@@ -4,6 +4,7 @@
   "description": "A Telegram bot that track orders on the decentralized exchange Switcheo",
   "main": "app.js",
   "dependencies": {
+    "@cityofzion/neon-js": "^4.0.2",
     "body-parser": "^1.18.3",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",

@@ -5,6 +5,8 @@ const bodyParser = require('body-parser')
 const request = require('request');
 const app = express()
 const port = process.env.PORT || 3000
+const { wallet } = require('@cityofzion/neon-js')
+const address = wallet.getScriptHashFromAddress(process.env.NEO_ADDRESS) // only for testing purposes
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -26,11 +28,29 @@ function logRequest(req) {
     console.log("Received " + req.method + " " + req.url + body + " from " + req.headers.host)
 }
 
-function sendBotReply(userId, message) {
-    var data = (message.toLowerCase() === 'wassa wassa wassa') ? 'Hey hey hey' : 'Sorry, I don\'t undestand.';
+function sendBotReply(userId, userMessage) {
+    if (userMessage.toLowerCase() === '/open') {
+        var options = {
+            uri: process.env.SWITCHEO_API + '/v2/orders',
+            body: JSON.stringify({ address: address }),
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+        request(options, function (error, response) {
+            console.log(error, response.body);
+            sendMessage(userId, 'You have ' + response.body.length + ' open order(s).');
+        });
+    } else {
+        sendMessage(userId, 'Sorry, I don\'t undestand.');
+    }
+}
+
+function sendMessage(userId, text) {
     var options = {
-        uri: 'https://api.telegram.org/bot' + process.env.TELEGRAM_TOKEN + '/sendMessage',
-        body: JSON.stringify({ chat_id: userId, text: data}),
+        uri: process.env.BOT_API + '/sendMessage',
+        body: JSON.stringify({ chat_id: userId, text: text}),
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
